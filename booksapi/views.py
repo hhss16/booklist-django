@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from .models import Book
@@ -21,10 +22,14 @@ def books(request):
             author = author,
             price = price
         )
-        book.save()
+        try:
+            book.save()
+        except IntegrityError:
+            return JsonResponse({'error':'true','message':'required field missing'},status=400)
+
         # data = serialize("json", book)
         # return HttpResponse(data, content_type="application/json")
-        return JsonResponse(model_to_dict(book))
+        return JsonResponse(model_to_dict(book), status=201)
 
 @csrf_exempt
 def book(request, pk):
